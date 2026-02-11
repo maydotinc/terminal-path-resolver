@@ -1,0 +1,60 @@
+{
+  "name": "terminal-path-resolver",
+  "displayName": "Terminal Path Resolver",
+  "description": "Fix no-match file paths in your terminal error logging.",
+  "version": "0.0.1",
+  "publisher": "maydotinc",
+  "license": "MIT",
+  "icon": "images/logo.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maydotinc/terminal-path-resolver"
+  },
+  "bugs": {
+    "url": "https://github.com/maydotinc/terminal-path-resolver/issues"
+  },
+  "homepage": "https://github.com/maydotinc/terminal-path-resolver#readme",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "path",
+    "file",
+    "error",
+    "logs",
+    "navigation",
+    "monorepo",
+    "turborepo",
+    "terminal"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "terminalPathResolver.openPath",
+        "title": "Terminal Path Resolver: Open File Path"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "package": "mkdir -p builds && vsce package --out builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix --allow-star-activation",
+    "publish": "mkdir -p builds && vsce publish --packagePath builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix --allow-star-activation"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0",
+    "@types/node": "^20.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}
