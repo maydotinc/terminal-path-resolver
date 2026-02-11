@@ -2,10 +2,14 @@
 
 Fix no-match file paths in your terminal error logs.
 
-> **🎬 Demo Video:**  
-> <a href="https://cdn-may.com/terminal-path-resolver/example-video.mp4" target="_blank" rel="noopener">Watch Terminal Path Resolver in action</a>
->
-> <video src="https://cdn-may.com/terminal-path-resolver/example-video.mp4" width="600" style="border-radius:8px; margin-top:8px;" controls loop muted></video>
+---
+
+## 🎬 Demo Video
+
+<video src="https://cdn-may.com/terminal-path-resolver/example-video.mp4" width="600" style="border-radius:8px; margin-top:8px;" controls loop muted>
+  Sorry, your browser doesn't support embedded videos.  
+  [Watch Terminal Path Resolver in action](https://cdn-may.com/terminal-path-resolver/example-video.mp4)
+</video>
 
 ---
 
