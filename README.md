@@ -47,7 +47,7 @@ Terminal Path Resolver intercepts these links and resolves them to your actual w
 
 ## Installation
 
-Install from the [VS Code Marketplace](pending-link) or install the `.vsix` file directly:
+Download from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maydotinc.terminal-path-resolver), [OpenVSX marketplace](https://open-vsx.org/extension/maydotinc/terminal-path-resolver) or install the `.vsix` file directly:
 
 1. Download the most recent `.vsix` file from `/builds` of this repo
 2. Run `code --install-extension terminal-path-resolver-X.X.X.vsix`, replacing `X.X.X` with the version you downloaded.
