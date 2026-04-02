@@ -1,47 +1,33 @@
 import * as vscode from 'vscode';
-import { PATH_REGEX_GLOBAL } from './constants';
-import { resolvePath, openFile, getRelativePath } from './resolver';
+import { parsePathMatches } from './parser';
+import { getSupportedExtensions, openResolvedFile, PathResolver } from './resolver';
+import type { ParsedPathMatch } from './types';
 
 interface PathLink extends vscode.TerminalLink {
-  filePath: string;
-  line: number;
-  col: number;
+  parsedPath: ParsedPathMatch;
+  terminal: vscode.Terminal;
 }
 
 export class TerminalPathResolverLinkProvider implements vscode.TerminalLinkProvider<PathLink> {
+  constructor(private readonly resolver: PathResolver) {}
+
   provideTerminalLinks(context: vscode.TerminalLinkContext): vscode.ProviderResult<PathLink[]> {
-    const links: PathLink[] = [];
-    const line = context.line;
-
-    PATH_REGEX_GLOBAL.lastIndex = 0;
-
-    let match;
-    while ((match = PATH_REGEX_GLOBAL.exec(line)) !== null) {
-      const [fullMatch, filePath, , lineStr, colStr] = match;
-      const relativePath = getRelativePath(filePath);
-      const displayPath = relativePath.startsWith('/') ? relativePath : `/${relativePath}`;
-      const suffix = colStr ? `${lineStr}:${colStr}` : `${lineStr}`;
-
-      links.push({
-        startIndex: match.index,
-        length: fullMatch.length,
-        tooltip: `Open ${displayPath}:${suffix}`,
-        filePath,
-        line: Number(lineStr) - 1,
-        col: colStr ? Number(colStr) - 1 : 0,
-      });
-    }
-
-    return links;
+    return parsePathMatches(context.line, getSupportedExtensions()).map((parsedPath) => ({
+      startIndex: parsedPath.startIndex,
+      length: parsedPath.length,
+      tooltip: `Open ${parsedPath.normalizedPath}:${parsedPath.line + 1}:${parsedPath.col + 1}`,
+      parsedPath,
+      terminal: context.terminal,
+    }));
   }
 
   async handleTerminalLink(link: PathLink): Promise<void> {
-    const resolved = await resolvePath(link.filePath);
-    if (resolved) {
-      await openFile(resolved, link.line, link.col);
-    } else {
-      const relativePath = getRelativePath(link.filePath);
-      vscode.window.showErrorMessage(`Could not resolve path: ${relativePath}`);
+    const resolved = await this.resolver.resolve(link.parsedPath, link.terminal);
+    if (!resolved) {
+      vscode.window.showErrorMessage(`Could not resolve path: ${link.parsedPath.originalPath}`);
+      return;
     }
+
+    await openResolvedFile(resolved, link.parsedPath.line, link.parsedPath.col);
   }
 }

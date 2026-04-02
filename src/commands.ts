@@ -1,39 +1,36 @@
 import * as vscode from 'vscode';
-import { PATH_REGEX, TERMINAL_ARTIFACTS_REGEX } from './constants';
-import { resolvePath, openFile } from './resolver';
+import { parsePathMatches } from './parser';
+import { getSupportedExtensions, openResolvedFile, PathResolver } from './resolver';
 
-export function registerCommands(context: vscode.ExtensionContext): void {
+export function registerCommands(
+  context: vscode.ExtensionContext,
+  resolver: PathResolver
+): void {
   const openPathCommand = vscode.commands.registerCommand(
     'terminalPathResolver.openPath',
-    handleOpenPath
+    async () => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        return;
+      }
+
+      const selection = editor.document.getText(editor.selection);
+      const parsedPath = parsePathMatches(selection, getSupportedExtensions())[0];
+
+      if (!parsedPath) {
+        vscode.window.showErrorMessage('No file path detected.');
+        return;
+      }
+
+      const resolved = await resolver.resolve(parsedPath);
+      if (!resolved) {
+        vscode.window.showErrorMessage(`Could not resolve path: ${parsedPath.originalPath}`);
+        return;
+      }
+
+      await openResolvedFile(resolved, parsedPath.line, parsedPath.col);
+    }
   );
 
   context.subscriptions.push(openPathCommand);
-}
-
-async function handleOpenPath(): Promise<void> {
-  const editor = vscode.window.activeTextEditor;
-
-  if (!editor) return;
-
-  const selection = editor.document.getText(editor.selection);
-
-  const cleaned = selection.replace(TERMINAL_ARTIFACTS_REGEX, '');
-  const match = cleaned.match(PATH_REGEX);
-
-  if (!match) {
-    vscode.window.showErrorMessage('No file path detected.');
-    return;
-  }
-
-  const [, fullPath, , lineStr, colStr] = match;
-  const line = Number(lineStr) - 1;
-  const col = colStr ? Number(colStr) - 1 : 0;
-
-  const resolved = await resolvePath(fullPath);
-  if (resolved) {
-    await openFile(resolved, line, col);
-  } else {
-    vscode.window.showErrorMessage('Could not resolve path in workspace.');
-  }
 }

@@ -1,87 +1,79 @@
 # Terminal Path Resolver
 
-Fix no-match file paths in your terminal error logs.
+Resolve terminal file paths to the right file in your workspace, even when the emitted path does not exactly match your local machine.
 
-> **🎬 Demo Video:**  
-> <a href="https://cdn-may.com/terminal-path-resolver/example-video.mp4" target="_blank" rel="noopener">Watch Terminal Path Resolver in action</a>
->
-> <video src="https://cdn-may.com/terminal-path-resolver/example-video.mp4" width="600" style="border-radius:8px; margin-top:8px;" controls loop muted></video>
+## What It Supports
 
----
+Terminal Path Resolver detects and opens:
 
-**Example:**
+- Unix absolute paths like `/repo/apps/web/src/page.tsx:12:3`
+- Windows absolute paths like `C:\repo\apps\web\src\page.tsx:12:3`
+- Workspace-relative paths like `apps/web/src/page.tsx:12:3`
+- Task-prefixed relative paths like `web:dev: src/page.tsx:12:3`
 
-_Before:_  
-`/example/pages/api/hello.ts:9:29`
+It is designed for monorepos and Turborepo-style terminal output where the visible path is often only a suffix of the real file location.
 
-_After:_  
-`/Users/you/example/pages/api/hello.ts:9:29`
+It also handles copied stack traces where a path or `:line:column` suffix has been split across multiple lines.
 
----
+## How It Resolves Paths
 
-**Open file paths from the terminal**: <kbd>Cmd</kbd>-click (on Mac) or <kbd>Ctrl</kbd>-click (on Windows/Linux) any file path shown in the terminal to open that file in your editor—even if the path doesn’t exist exactly on your system.
+The extension resolves paths in this order:
 
-**Works in monorepos**: Finds and opens files by searching all folders in your workspace for files that match the name and extension, making it easy to handle paths from CI or different machines.
+1. Exact absolute path on the current machine
+2. Exact workspace-relative path under any open workspace folder
+3. Ranked suffix matches from a cached workspace file index
 
-**Manual path opening**: Select any file path in your editor, then run the "Terminal Path Resolver: Open File Path" command from the command palette to jump directly to the file.
+When more than one file is plausible, the extension shows a Quick Pick instead of silently opening the first match.
 
-## Use Case
+## Usage
 
-When working in a monorepo or with error logs from CI/Docker, file paths often reference locations that don't correlate to the exact path in which it exists on your local machine:
+### Terminal links
 
-Terminal Path Resolver intercepts these links and resolves them to your actual workspace location.
+Cmd-click on macOS or Ctrl-click on Windows/Linux to open a detected path directly from the integrated terminal.
+
+### Manual command
+
+Select a path in the editor and run `Terminal Path Resolver: Open File Path` from the command palette.
+
+## Settings
+
+- `terminalPathResolver.showQuickPickOnAmbiguousMatch`
+  Show a Quick Pick when multiple files are plausible matches.
+- `terminalPathResolver.excludeGlob`
+  Legacy single-glob exclude appended to the built-in excludes.
+- `terminalPathResolver.excludeGlobs`
+  Additional glob patterns excluded from the workspace file index. Use this for repo-specific build artifacts.
+- `terminalPathResolver.maxIndexedFiles`
+  Limit how many files are indexed per workspace folder.
+- `terminalPathResolver.extraExtensions`
+  Add extra file extensions to the built-in supported list.
 
 ## Supported File Types
 
-**JavaScript/TypeScript:** `.ts`, `.js`, `.tsx`, `.jsx`, `.mjs`, `.cjs`
+Built-in extensions:
 
-**Web/Frontend:** `.css`, `.scss`, `.sass`, `.less`, `.html`, `.vue`, `.svelte`, `.astro`
+`.js`, `.jsx`, `.ts`, `.tsx`, `.mjs`, `.cjs`, `.html`, `.css`, `.scss`, `.sass`, `.less`, `.vue`, `.svelte`, `.astro`, `.json`, `.yaml`, `.yml`, `.toml`, `.xml`, `.env`, `.py`, `.rb`, `.go`, `.rs`, `.java`, `.kt`, `.php`, `.sql`, `.sh`, `.c`, `.cpp`, `.h`, `.hpp`, `.cs`, `.swift`, `.graphql`, `.gql`, `.md`, `.mdx`
 
-**Data/Config:** `.json`, `.yaml`, `.yml`, `.toml`, `.xml`, `.env`
+## Development
 
-**Backend:** `.py`, `.rb`, `.go`, `.rs`, `.java`, `.kt`, `.php`, `.sql`, `.sh`
+```bash
+npm install
+npm run compile
+npm run test:unit
+npm run test:integration
+```
 
-**Systems:** `.c`, `.cpp`, `.h`, `.hpp`, `.cs`, `.swift`
-
-**Other:** `.graphql`, `.gql`, `.md`, `.mdx`
+Open the repo in VS Code and press `F5` to launch an Extension Development Host.
 
 ## Installation
 
-Download from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maydotinc.terminal-path-resolver), [OpenVSX marketplace](https://open-vsx.org/extension/maydotinc/terminal-path-resolver) or install the `.vsix` file directly:
+Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=maydotinc.terminal-path-resolver), [OpenVSX](https://open-vsx.org/extension/maydotinc/terminal-path-resolver), or package the repo locally:
 
-1. Download the most recent `.vsix` file from `/builds` of this repo
-2. Run `code --install-extension terminal-path-resolver-X.X.X.vsix`, replacing `X.X.X` with the version you downloaded.
-
-## Run Locally
-
-To test or contribute to Terminal Path Resolver locally:
-
-1. **Install dependencies**
-
-   ```bash
-   npm install
-   ```
-
-2. **Compile the extension**
-
-   ```bash
-   npm run compile
-   ```
-
-3. **Open in VS Code**
-   - Open the extension folder in VS Code.
-   - Press <kbd>F5</kbd> to launch a new Extension Development Host window with the extension loaded.
-
-**Tip:** Use `npm run watch` for automatic TypeScript recompilation during development.
+```bash
+npm run package
+code --install-extension builds/terminal-path-resolver-0.0.2.vsix
+```
 
 ## License
 
 MIT
-
-## Notes
-
-shipped out of desperation by [noah](https://github.com/NoahGdev), in collab with [may.inc](https://may.inc)
-
-reach out to [info@may.inc](mailto:info@may.inc) for bugs, questions, or improvments
-
-star the repo if helpful :)!

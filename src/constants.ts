@@ -1,13 +1,10 @@
-export const SUPPORTED_FILE_EXTENSIONS = [
-  // JavaScript & TypeScript
+export const DEFAULT_SUPPORTED_FILE_EXTENSIONS = [
   'js',
   'jsx',
   'ts',
   'tsx',
   'mjs',
   'cjs',
-
-  // Web & Frontend
   'html',
   'css',
   'scss',
@@ -16,16 +13,12 @@ export const SUPPORTED_FILE_EXTENSIONS = [
   'vue',
   'svelte',
   'astro',
-
-  // Data & Configuration
   'json',
   'yaml',
   'yml',
   'toml',
   'xml',
   'env',
-
-  // Backend Languages
   'py',
   'rb',
   'go',
@@ -35,34 +28,27 @@ export const SUPPORTED_FILE_EXTENSIONS = [
   'php',
   'sql',
   'sh',
-
-  // System Languages
   'c',
   'cpp',
   'h',
   'hpp',
   'cs',
   'swift',
-
-  // GraphQL
   'graphql',
   'gql',
-
-  // Documentation & Markdown
   'md',
   'mdx',
 ] as const;
 
-// Regex to match file paths with line and optional column numbers
-export const PATH_REGEX = new RegExp(
-  `(\\/[^:\\s]+?\\.(${SUPPORTED_FILE_EXTENSIONS.join('|')})):(\\d+)(?::(\\d+))?` // Example: /path/to/file.ext:line[:col]
-);
+export const DEFAULT_EXCLUDE_GLOBS = [
+  '**/{node_modules,.git,.next,.nuxt,.svelte-kit,.turbo,.cache,.pnpm-store}/**',
+  '**/{dist,build,out,coverage,tmp,temp}/**',
+  '**/{target,vendor,.venv,venv}/**',
+];
 
-// Regex to match file paths with line and optional column numbers, global
-export const PATH_REGEX_GLOBAL = new RegExp(
-  `(\\/[^:\\s]+?\\.(${SUPPORTED_FILE_EXTENSIONS.join('|')})):(\\d+)(?::(\\d+))?`, // Example: /path/to/file.ext:line[:col]
-  'g'
-);
+export const DEFAULT_MAX_INDEXED_FILES = 20000;
+export const QUICK_PICK_THRESHOLD = 15;
 
-// Regex to strip terminal artifacts from selections
-export const TERMINAL_ARTIFACTS_REGEX = /^[»│\s]+/;
+export const ANSI_ESCAPE_REGEX =
+  // Matches CSI and OSC terminal escape sequences while leaving printable text intact.
+  /\u001B(?:\[[0-?]*[ -/]*[@-~]|\][^\u0007]*(?:\u0007|\u001B\\))/g;
