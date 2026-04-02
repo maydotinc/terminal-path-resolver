@@ -1,13 +1,23 @@
+## 0.0.2 - 2026-04-01
+
+### Added
+
+- Cross-platform parsing for Unix absolute, Windows absolute, workspace-relative, and Turborepo-style task-prefixed paths.
+- Terminal-context-aware ranking that prefers the cwd and command context of the terminal that emitted the log line.
+- Quick Pick disambiguation for multi-match results without showing absolute-path detail rows.
+- Support for copied stack traces where paths or `:line:column` suffixes wrap across multiple lines.
+- Unit coverage for parser and ranking behavior, plus extension-host tests for command execution and terminal link detection.
+- Smarter default workspace-index excludes for common monorepo and build-output folders, plus configurable `excludeGlobs`.
+
+### Changed
+
+- Replaced first-hit suffix probing with indexed deterministic resolution and scoring.
+- Narrowed activation events and removed packaging flags that were only needed for star activation.
+- Bumped the packaged extension version to `0.0.2`.
+
 ## 1.0.0 - 2026-02-11
 
 ### Added
 
-- Terminal link provider that detects file paths in terminal output in the form `/path/to/file.ext:line[:col]` and opens them directly in VS Code.
-- Open paths via Cmd-click (macOS) / Ctrl-click (Windows/Linux) on matched terminal links.
-- Multi-root workspace support: attempts to resolve “no-match” paths by searching across all workspace folders.
-- Monorepo-friendly path resolution:
-  - Strips a detected repo root (by markers like `.git`, `package.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`, etc.) to try a relative path.
-  - Falls back to trying successive suffixes of the original path within each workspace folder.
-- Command `Terminal Path Resolver: Open File Path` (`terminalPathResolver.openPath`) to open a selected path (with terminal prompt artifacts stripped).
-- Support for common source/config extensions (JS/TS, web, config, backend/system languages, GraphQL, and markdown) when detecting links.
-- User-facing errors when no path is detected or when a path can’t be resolved in the current workspace.
+- Initial terminal link provider for `/path/to/file.ext:line[:col]` terminal output.
+- Multi-root workspace resolution and the `terminalPathResolver.openPath` command.

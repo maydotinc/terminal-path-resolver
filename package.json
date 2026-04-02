@@ -2,7 +2,7 @@
   "name": "terminal-path-resolver",
   "displayName": "Terminal Path Resolver",
   "description": "Fix no-match file paths in your terminal error logging.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "maydotinc",
   "license": "MIT",
   "icon": "images/logo.png",
@@ -31,7 +31,8 @@
     "terminal"
   ],
   "activationEvents": [
-    "*"
+    "onStartupFinished",
+    "onCommand:terminalPathResolver.openPath"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -40,19 +41,60 @@
         "command": "terminalPathResolver.openPath",
         "title": "Terminal Path Resolver: Open File Path"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Terminal Path Resolver",
+      "properties": {
+        "terminalPathResolver.showQuickPickOnAmbiguousMatch": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a Quick Pick when multiple files are plausible matches for a parsed path."
+        },
+        "terminalPathResolver.excludeGlob": {
+          "type": "string",
+          "default": "",
+          "description": "Legacy single glob appended to the built-in workspace index excludes."
+        },
+        "terminalPathResolver.excludeGlobs": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional glob patterns excluded from the workspace index."
+        },
+        "terminalPathResolver.maxIndexedFiles": {
+          "type": "number",
+          "default": 20000,
+          "minimum": 1000,
+          "description": "Maximum number of files indexed per workspace folder."
+        },
+        "terminalPathResolver.extraExtensions": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional file extensions to treat as resolvable terminal paths."
+        }
+      }
+    }
   },
   "scripts": {
     "compile": "tsc -p .",
+    "test:unit": "npm run compile && node --test test/**/*.test.js",
+    "test:integration": "npm run compile && node ./test/runExtensionTests.js",
+    "test": "npm run test:unit && npm run test:integration",
     "watch": "tsc -watch -p .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "package": "mkdir -p builds && vsce package --out builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix --allow-star-activation",
-    "publish": "mkdir -p builds && vsce publish --packagePath builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix --allow-star-activation"
+    "package": "mkdir -p builds && vsce package --out builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix",
+    "publish": "mkdir -p builds && vsce publish --packagePath builds/terminal-path-resolver-`node -p \"require('./package.json').version\"`.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.80.0",
     "@types/node": "^20.0.0",
+    "@vscode/test-electron": "^2.4.1",
     "prettier": "^3.0.0",
     "typescript": "^5.0.0",
     "@vscode/vsce": "^2.22.0"
