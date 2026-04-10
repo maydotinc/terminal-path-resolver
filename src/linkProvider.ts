@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { parsePathMatches } from './parser';
-import { getSupportedExtensions, openResolvedFile, PathResolver } from './resolver';
+import {
+  getSupportedExtensions,
+  openQuickOpenFallback,
+  openResolvedFile,
+  PathResolver,
+} from './resolver';
 import type { ParsedPathMatch } from './types';
 
 interface PathLink extends vscode.TerminalLink {
@@ -24,7 +29,7 @@ export class TerminalPathResolverLinkProvider implements vscode.TerminalLinkProv
   async handleTerminalLink(link: PathLink): Promise<void> {
     const resolved = await this.resolver.resolve(link.parsedPath, link.terminal);
     if (!resolved) {
-      vscode.window.showErrorMessage(`Could not resolve path: ${link.parsedPath.originalPath}`);
+      await openQuickOpenFallback(link.parsedPath);
       return;
     }
 

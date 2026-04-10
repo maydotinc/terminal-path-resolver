@@ -122,6 +122,40 @@ export function rankCandidates(
     .sort((left, right) => right.score - left.score);
 }
 
+export function rankSuggestedCandidates(
+  candidates: IndexedWorkspaceFile[],
+  parsedPath: ParsedPathMatch,
+  terminalContext?: TerminalContextHint
+): RankedCandidate[] {
+  const targetSegments = getPathSegments(parsedPath.normalizedComparablePath);
+  const targetBasename = getBasename(parsedPath.normalizedComparablePath);
+  const targetSegmentSet = new Set(targetSegments.map((segment) => segment.toLowerCase()));
+
+  return candidates
+    .map((candidate) => {
+      let score = 0;
+
+      if (candidate.basename === targetBasename) {
+        score += 180;
+      }
+
+      for (const segment of candidate.segments) {
+        if (targetSegmentSet.has(segment.toLowerCase())) {
+          score += 18;
+        }
+      }
+
+      score += getTokenAlignmentScore(candidate, parsedPath.taskTokens);
+      score += getTokenAlignmentScore(candidate, terminalContext?.tokens ?? []) * 2;
+      score += getTerminalCwdScore(candidate, terminalContext);
+
+      return { candidate, score };
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((left, right) => right.score - left.score)
+    .slice(0, 25);
+}
+
 export function hasClearBestCandidate(candidates: RankedCandidate[]): boolean {
   if (candidates.length <= 1) {
     return candidates.length === 1;

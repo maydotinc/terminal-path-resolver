@@ -59,3 +59,11 @@ test('reassembles wrapped line and column suffixes across lines', () => {
   assert.equal(match.line, 11);
   assert.equal(match.col, 2);
 });
+
+test('parses Next.js relative component paths from build output', () => {
+  const [match] = parsePathMatches('./components/booking-overview/upcoming-bookings.tsx:80:54');
+
+  assert.equal(match.originalPath, './components/booking-overview/upcoming-bookings.tsx');
+  assert.equal(match.line, 79);
+  assert.equal(match.col, 53);
+});

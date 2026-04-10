@@ -2,7 +2,7 @@
   "name": "terminal-path-resolver",
   "displayName": "Terminal Path Resolver",
   "description": "Fix no-match file paths in your terminal error logging.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "maydotinc",
   "license": "MIT",
   "icon": "images/logo.png",

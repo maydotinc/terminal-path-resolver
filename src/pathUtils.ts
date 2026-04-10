@@ -1,3 +1,4 @@
+import type { ParsedPathMatch } from './types';
 import * as path from 'path';
 
 export function normalizeSlashes(value: string): string {
@@ -73,4 +74,13 @@ export function tokenizeText(value: string): string[] {
     .flatMap((token) => token.split(/[:/]/))
     .map((token) => token.replace(/^@/, '').trim().toLowerCase())
     .filter((token) => token.length >= 2);
+}
+
+export function buildQuickOpenQuery(parsedPath: ParsedPathMatch): string {
+  const comparablePath = parsedPath.normalizedComparablePath.replace(/^\/+/, '');
+  const queryPath = comparablePath || getBasename(parsedPath.originalPath);
+  const line = parsedPath.line + 1;
+  const col = parsedPath.col + 1;
+
+  return `${queryPath}:${line}:${col}`;
 }

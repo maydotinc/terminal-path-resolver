@@ -8,6 +8,7 @@ import {
 } from './constants';
 import {
   getBasename,
+  buildQuickOpenQuery,
   getPathSegments,
   isUnixAbsolutePath,
   isWindowsAbsolutePath,
@@ -16,7 +17,11 @@ import {
   tokenizeText,
   toPlatformPath,
 } from './pathUtils';
-import { hasClearBestCandidate, rankCandidates } from './resolutionEngine';
+import {
+  hasClearBestCandidate,
+  rankCandidates,
+  rankSuggestedCandidates,
+} from './resolutionEngine';
 import type {
   IndexedWorkspaceFile,
   ParsedPathMatch,
@@ -96,6 +101,10 @@ function isExactAbsoluteMatch(originalPath: string): boolean {
   return false;
 }
 
+export async function openQuickOpenFallback(parsedPath: ParsedPathMatch): Promise<void> {
+  await vscode.commands.executeCommand('workbench.action.quickOpen', buildQuickOpenQuery(parsedPath));
+}
+
 export class PathResolver implements vscode.Disposable {
   private indexPromise: Promise<IndexedWorkspaceFile[]> | undefined;
   private readonly disposables: vscode.Disposable[] = [];
@@ -172,9 +181,27 @@ export class PathResolver implements vscode.Disposable {
     }
 
     const index = await this.getIndex();
-    const rankedCandidates = rankCandidates(index, parsedPath, this.getTerminalContext(terminal));
+    const terminalContext = this.getTerminalContext(terminal);
+    const rankedCandidates = rankCandidates(index, parsedPath, terminalContext);
     if (!rankedCandidates.length) {
-      return null;
+      const suggestedCandidates = rankSuggestedCandidates(index, parsedPath, terminalContext);
+      if (!suggestedCandidates.length) {
+        return null;
+      }
+
+      const pickedSuggestion = await this.pickCandidate(
+        suggestedCandidates,
+        `No exact match for ${normalizeSlashes(parsedPath.originalPath)}. Select a suggested file.`
+      );
+      if (!pickedSuggestion) {
+        return null;
+      }
+
+      return {
+        path: pickedSuggestion.fsPath,
+        displayPath: pickedSuggestion.workspaceRelativePath,
+        matchedBy: 'suggested',
+      };
     }
 
     if (hasClearBestCandidate(rankedCandidates) || !shouldUseQuickPick()) {
@@ -186,24 +213,17 @@ export class PathResolver implements vscode.Disposable {
       };
     }
 
-    const picked = await vscode.window.showQuickPick(
-      rankedCandidates.map(({ candidate }) => ({
-        label: candidate.workspaceRelativePath,
-        description: candidate.workspaceFolderName,
-        candidate,
-      })),
-      {
-        placeHolder: `Select a match for ${normalizeSlashes(parsedPath.originalPath)}`,
-      }
+    const picked = await this.pickCandidate(
+      rankedCandidates,
+      `Select a match for ${normalizeSlashes(parsedPath.originalPath)}`
     );
-
     if (!picked) {
       return null;
     }
 
     return {
-      path: picked.candidate.fsPath,
-      displayPath: picked.candidate.workspaceRelativePath,
+      path: picked.fsPath,
+      displayPath: picked.workspaceRelativePath,
       matchedBy: 'scored',
     };
   }
@@ -295,6 +315,22 @@ export class PathResolver implements vscode.Disposable {
       cwdComparablePath: shellContext.cwdComparablePath ?? executionContext.cwdComparablePath,
       tokens: [...new Set([...shellContext.tokens, ...executionContext.tokens])],
     };
+  }
+
+  private async pickCandidate(
+    rankedCandidates: { candidate: IndexedWorkspaceFile }[],
+    placeHolder: string
+  ): Promise<IndexedWorkspaceFile | undefined> {
+    const picked = await vscode.window.showQuickPick(
+      rankedCandidates.map(({ candidate }) => ({
+        label: candidate.workspaceRelativePath,
+        description: candidate.workspaceFolderName,
+        candidate,
+      })),
+      { placeHolder }
+    );
+
+    return picked?.candidate;
   }
 }
 

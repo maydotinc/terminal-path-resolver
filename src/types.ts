@@ -26,7 +26,7 @@ export interface IndexedWorkspaceFile {
 export interface ResolutionResult {
   path: string;
   displayPath: string;
-  matchedBy: 'absolute' | 'workspace-relative' | 'scored';
+  matchedBy: 'absolute' | 'workspace-relative' | 'scored' | 'suggested';
 }
 
 export interface TerminalContextHint {

@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { parsePathMatches } from './parser';
-import { getSupportedExtensions, openResolvedFile, PathResolver } from './resolver';
+import {
+  getSupportedExtensions,
+  openQuickOpenFallback,
+  openResolvedFile,
+  PathResolver,
+} from './resolver';
 
 export function registerCommands(
   context: vscode.ExtensionContext,
@@ -24,7 +29,7 @@ export function registerCommands(
 
       const resolved = await resolver.resolve(parsedPath);
       if (!resolved) {
-        vscode.window.showErrorMessage(`Could not resolve path: ${parsedPath.originalPath}`);
+        await openQuickOpenFallback(parsedPath);
         return;
       }
 
